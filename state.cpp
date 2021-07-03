@@ -1,10 +1,8 @@
 #include "constants.h"
+#include "led.h"
 #include "rule.h"
 #include "state_init.h"
-#include "state_setup.h"
 #include "stfu.h"
-
-namespace State {
 
 int wireCount;
 int wireToCut;
@@ -22,12 +20,32 @@ int initialize()
     return STATE_SETUP;
 }
 
-int setup() { }
+int wireBeingSetUp = 0;
 
-int ready() { }
+int setupWires()
+{
+    if (digitalRead(WIRES[wireBeingSetUp]) == LOW) {
+        ++wireBeingSetUp;
+    }
+
+    setRGBLedByColor(wireSetup[wireBeingSetUp]);
+
+    if (wireBeingSetUp >= wireCount) {
+        return STATE_READY;
+    }
+    return STATE_SETUP;
+}
+
+int ready()
+{
+    if (digitalRead(WIRE_4) == HIGH) {
+        setRGBLedByColor(blue);
+    } else if (digitalRead(WIRE_4) == LOW) {
+        setRGBLedByColor(white);
+    }
+    return STATE_READY;
+}
 
 int running() { }
 
 int finished() { }
-
-} // namespace State

@@ -5,7 +5,8 @@
 const int LED_RED = 2;
 const int LED_GREEN = 3;
 const int LED_BLUE = 4;
-const int LED_YELLOW = 5;
+
+const unsigned long LED_BLACK_BLINK_INTERVAL = 500;
 
 // Wires
 const int WIRE_1 = 6;

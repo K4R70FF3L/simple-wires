@@ -1,4 +1,5 @@
 #include "constants.h"
+#include "led.h"
 #include "rule.h"
 #include "stfu.h"
 
@@ -49,6 +50,7 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
     }
     bool changed[] = { false, false, false, false, false, false };
 
+    // TODO make sure that the wires already correct don't get changed while trying to fulfill other parts of the rule
     Rule* solvingRulePart = &solvingRule;
     while (solvingRulePart != nullptr) {
         if (solvingRulePart->color == serial || solvingRulePart->color == unspecified) {
@@ -61,6 +63,7 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
             // Count wires of color specified in rule
             for (int index = 0; index < 6; ++index) {
                 wiresOfColor += wireSetup[index] == solvingRulePart->color ? 1 : 0;
+                changed[index] = false;
             }
 
             if (solvingRulePart->countExact == 0 && wiresOfColor != solvingRulePart->count) {
@@ -68,7 +71,8 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
                     for (int index = 0; index < wireCount; ++index) {
                         if (!changed[index] && wireSetup[index] == solvingRulePart->color) {
                             wireSetup[index] = green;
-                            changed[index] = true;
+                            --wiresOfColor;
+                            changed[index] = false;
                             break;
                         }
                     }
@@ -77,6 +81,7 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
                     for (int index = 0; index < wireCount; ++index) {
                         if (!changed[index] && wireSetup[index] != solvingRulePart->color) {
                             wireSetup[index] = solvingRulePart->color;
+                            ++wiresOfColor;
                             changed[index] = true;
                             break;
                         }
@@ -87,6 +92,7 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
                     for (int index = 0; index < wireCount; ++index) {
                         if (!changed[index] && wireSetup[index] != solvingRulePart->color) {
                             wireSetup[index] = solvingRulePart->color;
+                            ++wiresOfColor;
                             changed[index] = true;
                             break;
                         }
@@ -97,7 +103,8 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
                     for (int index = 0; index < wireCount; ++index) {
                         if (!changed[index] && wireSetup[index] == solvingRulePart->color) {
                             wireSetup[index] = green;
-                            changed[index] = true;
+                            --wiresOfColor;
+                            changed[index] = false;
                             break;
                         }
                     }
@@ -107,6 +114,7 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
                     for (int index = 0; index < wireCount; ++index) {
                         if (!changed[index] && wireSetup[index] != solvingRulePart->color) {
                             wireSetup[index] = solvingRulePart->color;
+                            ++wiresOfColor;
                             changed[index] = true;
                             break;
                         }
@@ -117,7 +125,8 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
                     for (int index = 0; index < wireCount; ++index) {
                         if (!changed[index] && wireSetup[index] == solvingRulePart->color) {
                             wireSetup[index] = green;
-                            changed[index] = true;
+                            --wiresOfColor;
+                            changed[index] = false;
                             break;
                         }
                     }
@@ -127,7 +136,18 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
         solvingRulePart = solvingRulePart->additionalRule;
     }
 
+    setRGBLedByColor(red);
+    int iteration = 0;
     while (rules.rule != solvingRule) {
+        delay(100);
+        iteration = iteration + 1;
+        if (iteration == 3) {
+            digitalWrite(LED_BUILTIN, HIGH);
+        }
+        setRGBLedByColor(unspecified);
+        delay(500);
+        setRGBLedByColor(rules.rule.color);
+        delay(1000);
         while (ruleApplies(rules.rule, wireSetup, serialOdd)) {
             if (rules.rule.position >= 0) {
                 wireSetup[rules.rule.position] = green;
@@ -143,7 +163,6 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
                 for (int index = 0; index < wireCount; ++index) {
                     if (!changed[index] && wireSetup[index] == rules.rule.color) {
                         wireSetup[index] = green;
-                        changed[index] = true;
                         break;
                     }
                 }
@@ -160,7 +179,6 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
                     for (int index = 0; index < wireCount; ++index) {
                         if (!changed[index] && wireSetup[index] == rules.rule.color) {
                             wireSetup[index] = green;
-                            changed[index] = true;
                             break;
                         }
                     }
@@ -170,6 +188,10 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
 
         rules = *rules.nextRule;
     }
+    setRGBLedByColor(unspecified);
+    delay(500);
+    setRGBLedByColor(blue);
+    delay(10000);
 }
 
 // TODO should probably start with a lower probabilty and increase with higher

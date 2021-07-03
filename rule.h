@@ -36,9 +36,19 @@ struct Rule {
         additionalRule = add;
     }
 
-    bool operator==(Rule& rhs) { return this == &rhs; }
+    bool operator==(Rule& rhs)
+    {
+        return this->color == rhs.color && this->position == rhs.position && this->count == rhs.count
+            && this->countExact == rhs.countExact && this->cut == rhs.cut && this->cutColor == rhs.cutColor
+            && this->additionalRule == rhs.additionalRule;
+    }
 
-    bool operator!=(Rule& rhs) { return this != &rhs; }
+    bool operator!=(Rule& rhs)
+    {
+        return this->color != rhs.color || this->position != rhs.position || this->count != rhs.count
+            || this->countExact != rhs.countExact || this->cut != rhs.cut || this->cutColor != rhs.cutColor
+            || this->additionalRule != rhs.additionalRule;
+    }
 
     // Specifies the color of the wires considered by this rule.
     // If the color is set to 'unspecified' the rules applies always and the wire
