@@ -26,6 +26,8 @@ int setupWires()
 {
     if (digitalRead(WIRES[wireBeingSetUp]) == LOW) {
         ++wireBeingSetUp;
+        setRGBLedByColor(unspecified);
+        delay(500);
     }
 
     setRGBLedByColor(wireSetup[wireBeingSetUp]);
@@ -38,14 +40,28 @@ int setupWires()
 
 int ready()
 {
-    if (digitalRead(WIRE_4) == HIGH) {
-        setRGBLedByColor(blue);
-    } else if (digitalRead(WIRE_4) == LOW) {
-        setRGBLedByColor(white);
-    }
-    return STATE_READY;
+    setRGBLedByColor(unspecified);
+    return STATE_RUNNING;
 }
 
-int running() { }
+boolean cutWires[] = { false, false, false, false, false, false };
+
+int running()
+{
+    for (int index = 0; index < wireCount; ++index) {
+        if (digitalRead(WIRES[index]) && !cutWires[index]) {
+            if (index == wireToCut) {
+                setRGBLedByColor(green);
+                return STATE_FINISHED;
+            } else {
+                cutWires[index] = true;
+                setRGBLedByColor(red);
+                delay(1000);
+                setRGBLedByColor(unspecified);
+            }
+        }
+    }
+    return STATE_RUNNING;
+}
 
 int finished() { }

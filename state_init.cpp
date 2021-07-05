@@ -136,7 +136,6 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
         solvingRulePart = solvingRulePart->additionalRule;
     }
 
-    setRGBLedByColor(red);
     int iteration = 0;
     while (rules.rule != solvingRule) {
         delay(100);
@@ -144,10 +143,6 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
         if (iteration == 3) {
             digitalWrite(LED_BUILTIN, HIGH);
         }
-        setRGBLedByColor(unspecified);
-        delay(500);
-        setRGBLedByColor(rules.rule.color);
-        delay(1000);
         while (ruleApplies(rules.rule, wireSetup, serialOdd)) {
             if (rules.rule.position >= 0) {
                 wireSetup[rules.rule.position] = green;
@@ -188,10 +183,6 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
 
         rules = *rules.nextRule;
     }
-    setRGBLedByColor(unspecified);
-    delay(500);
-    setRGBLedByColor(blue);
-    delay(10000);
 }
 
 // TODO should probably start with a lower probabilty and increase with higher
