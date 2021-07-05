@@ -55,9 +55,7 @@ int running()
                 return STATE_FINISHED;
             } else {
                 cutWires[index] = true;
-                setRGBLedByColor(red);
-                delay(1000);
-                setRGBLedByColor(unspecified);
+                setRGBLedByColorForMillis(red, 1000);
             }
         }
     }

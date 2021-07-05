@@ -1,4 +1,5 @@
 #include "constants.h"
+#include "led.h"
 #include "state.h"
 #include "stfu.h"
 
@@ -55,28 +56,5 @@ void loop()
         state = finished();
         break;
     }
-    /* int reading = digitalRead(READ_PIN);
-
-    if (reading != lastReadState)
-    {
-      lastDebounceTime = millis();
-    }
-
-    if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY)
-    {
-      if (reading != readState)
-      {
-        readState = reading;
-
-        if (readState == HIGH)
-        {
-          digitalWrite(LED_RED, LOW);
-          digitalWrite(LED_GREEN, LOW);
-          digitalWrite(LED_BLUE, LOW);
-          digitalWrite(LED_YELLOW, LOW);
-        }
-      }
-    }
-
-    lastReadState = reading; */
+    handleLeds();
 }

@@ -2,8 +2,13 @@
 #include "rule.h"
 #include "stfu.h"
 
+unsigned long timestampSetRGB = 0;
+unsigned long ledMilliseconds = 0;
+boolean ledTimerActive = false;
+
 void setRGBLedByColor(Color color)
 {
+    ledTimerActive = false;
     switch (color) {
     case red:
         digitalWrite(LED_RED, HIGH);
@@ -50,5 +55,20 @@ void setRGBLedByColor(Color color)
         digitalWrite(LED_RED, LOW);
         digitalWrite(LED_GREEN, LOW);
         digitalWrite(LED_BLUE, LOW);
+    }
+}
+
+void setRGBLedByColorForMillis(Color color, int milliSeconds)
+{
+    setRGBLedByColor(color);
+    ledMilliseconds = milliSeconds;
+    timestampSetRGB = millis();
+    ledTimerActive = true;
+}
+
+void handleLeds()
+{
+    if (ledTimerActive && millis() > (timestampSetRGB + ledMilliseconds)) {
+        setRGBLedByColor(unspecified);
     }
 }
