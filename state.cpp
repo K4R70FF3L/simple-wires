@@ -59,7 +59,6 @@ int running()
             }
         }
     }
-    setRGBLedByColorForMillis(black, 100);
     return STATE_RUNNING;
 }
 

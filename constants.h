@@ -6,8 +6,8 @@ const int LED_RED = 4;
 const int LED_GREEN = 5;
 const int LED_BLUE = 3;
 
-const int LED_BRIGHTNESS_GREEN = 100;
-const int LED_BRIGHTNESS_BLUE = 100;
+const int LED_BRIGHTNESS_GREEN = 70;
+const int LED_BRIGHTNESS_BLUE = 70;
 
 const unsigned long LED_BLACK_BLINK_INTERVAL = 500;
 
