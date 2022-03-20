@@ -3,22 +3,81 @@
 #include "rule.h"
 #include "state_init.h"
 #include "stfu.h"
+#include <Wire.h>
 
 int wireCount;
 int wireToCut;
-bool serialOdd = true;
+int seed;
+bool serialOdd;
+byte address;
 Rule solvingRule;
 Color wireSetup[] = { unspecified, unspecified, unspecified, unspecified, unspecified, unspecified };
+byte moduleSolved = 0;
+bool strike = false;
+
+bool gotConfigFromI2C = false;
+
+void initializeFromI2C(int byteCount)
+{
+    seed = Wire.read() << 8;
+    seed += Wire.read();
+    serialOdd = (Wire.read() & SERIAL_ODD_MASK) > 0;
+    randomSeed(seed);
+    gotConfigFromI2C = true;
+}
+
+void getAddress(int byteCount)
+{
+    address = Wire.read();
+    Wire.onReceive(initializeFromI2C);
+    Wire.begin(address);
+}
+
+int initializeAddress()
+{
+    Wire.begin(8);
+    Wire.onReceive(getAddress);
+    return STATE_INITIALIZE;
+}
 
 int initialize()
 {
-    randomSeed(42);
-    wireCount = random(MIN_WIRES, MAX_WIRES + 1);
-    solvingRule = determineSolvingRule(RULE_BOOK[wireCount - MIN_WIRES], serialOdd);
-    setupWiresAccordingToRules(wireSetup, wireCount, RULE_BOOK[wireCount - MIN_WIRES], solvingRule, serialOdd);
-    wireToCut = determineWireToCut(solvingRule, wireSetup);
-    return STATE_SETUP;
+    if (gotConfigFromI2C) {
+        randomSeed(seed);
+        wireCount = random(MIN_WIRES, MAX_WIRES + 1);
+
+        if (RULE_BOOK_4.rule.color == red && RULE_BOOK_4.rule.count == 1 && RULE_BOOK_4.rule.countExact == 2
+            && RULE_BOOK_4.nextRule->rule.countExact == 0 && RULE_BOOK_4.nextRule->rule.count == 1
+            && RULE_BOOK_4.nextRule->rule.color == yellow && RULE_BOOK_4.nextRule->rule.additionalRule->color == white
+            && RULE_BOOK_4.nextRule->nextRule->rule.color == red && RULE_BOOK_4.nextRule->nextRule->rule.count == 0
+            && RULE_BOOK_4.nextRule->nextRule->rule.countExact == 0
+            && RULE_BOOK_4.nextRule->nextRule->nextRule->rule.color == unspecified
+            && RULE_BOOK_4.nextRule->nextRule->nextRule->rule.cut == 3) {
+            setRGBLedByColor(yellow);
+            delay(1000);
+            setRGBLedByColor(unspecified);
+            delay(500);
+        }
+
+        solvingRule = determineSolvingRule(RULE_BOOK[wireCount - MIN_WIRES], serialOdd);
+        setupWiresAccordingToRules(wireSetup, wireCount, RULE_BOOK[wireCount - MIN_WIRES], solvingRule, serialOdd);
+        wireToCut = determineWireToCut(solvingRule, wireSetup);
+        return STATE_SETUP;
+    }
+    return STATE_INITIALIZE;
 }
+
+void sendModuleStatus()
+{
+    byte status = moduleSolved;
+    if (strike) {
+        status |= MODULE_STATUS_STRIKE;
+        strike = false;
+    }
+    Wire.write(status);
+}
+
+void receiveDuringGame(int byteCount) { }
 
 int wireBeingSetUp = 0;
 
@@ -33,6 +92,8 @@ int setupWires()
     setRGBLedByColor(wireSetup[wireBeingSetUp]);
 
     if (wireBeingSetUp >= wireCount) {
+        Wire.onRequest(sendModuleStatus);
+        Wire.onReceive(receiveDuringGame);
         return STATE_READY;
     }
     return STATE_SETUP;
@@ -52,9 +113,11 @@ int running()
         if (digitalRead(WIRES[index]) && !cutWires[index]) {
             if (index == wireToCut) {
                 setRGBLedByColor(green);
+                moduleSolved = MODULE_STATUS_SOLVED;
                 return STATE_FINISHED;
             } else {
                 cutWires[index] = true;
+                strike = true;
                 setRGBLedByColorForMillis(red, 1000);
             }
         }

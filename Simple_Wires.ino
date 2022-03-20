@@ -2,6 +2,7 @@
 #include "led.h"
 #include "state.h"
 #include "stfu.h"
+#include <Wire.h>
 
 // Variables
 int state;
@@ -33,13 +34,16 @@ void setup()
     digitalWrite(LED_BUILTIN, LOW);
 
     // Set beginning state
-    state = STATE_INITIALIZE;
+    state = STATE_INITIALIZE_ADDRESS;
 }
 
 void loop()
 {
 
     switch (state) {
+    case STATE_INITIALIZE_ADDRESS:
+        state = initializeAddress();
+        break;
     case STATE_INITIALIZE:
         state = initialize();
         break;

@@ -31,7 +31,7 @@ struct Rule {
         position = p;
         count = cou;
         countExact = couEx;
-        cut = cut;
+        cut = ct;
         cutColor = ctClr;
         additionalRule = add;
     }
@@ -168,5 +168,9 @@ extern Rule wire6nr3;
 extern Rule wire6nr4;
 
 extern RuleSet RULE_BOOK[4];
+extern RuleSet RULE_BOOK_3;
+extern RuleSet RULE_BOOK_4;
+extern RuleSet RULE_BOOK_5;
+extern RuleSet RULE_BOOK_6;
 
 #endif

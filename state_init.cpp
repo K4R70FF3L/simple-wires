@@ -5,7 +5,7 @@
 
 bool ruleApplies(Rule rule, Color wireSetup[], bool serialOdd)
 {
-    if (rule.additionalRule == nullptr) {
+    if (rule.additionalRule != nullptr) {
         if (!ruleApplies(*rule.additionalRule, wireSetup, serialOdd)) {
             return false;
         }
@@ -15,9 +15,9 @@ bool ruleApplies(Rule rule, Color wireSetup[], bool serialOdd)
     if (rule.color == serial && !serialOdd) {
         // Handle serial rules
         return false;
-    } else if (rule.position >= 0 && wireSetup[rule.position] != rule.color) {
+    } else if (rule.position >= 0) {
         // Handle rules specifying color at position
-        return false;
+        return wireSetup[rule.position] == rule.color;
     } else {
         // Handle rules specifying wire count of color
         int wireCount = 0;
@@ -50,11 +50,28 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
     }
     bool changed[] = { false, false, false, false, false, false };
 
-    // TODO make sure that the wires already correct don't get changed while trying to fulfill other parts of the rule
     Rule* solvingRulePart = &solvingRule;
+    if (solvingRulePart->countExact == 0) {
+        setRGBLedByColor(red);
+        delay(1000);
+        setRGBLedByColor(unspecified);
+        delay(500);
+    }
+    if (solvingRulePart->additionalRule->color == white) {
+        setRGBLedByColor(blue);
+        delay(1000);
+        setRGBLedByColor(unspecified);
+        delay(500);
+    }
+    if (solvingRulePart->count == 1) {
+        setRGBLedByColor(green);
+        delay(1000);
+        setRGBLedByColor(unspecified);
+        delay(500);
+    }
     while (solvingRulePart != nullptr) {
         if (solvingRulePart->color == serial || solvingRulePart->color == unspecified) {
-
+            // Nothing to do for these rules
         } else if (solvingRulePart->position > -1) {
             wireSetup[solvingRulePart->position] = solvingRulePart->color;
             changed[solvingRulePart->position] = true;
@@ -62,14 +79,16 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
             int wiresOfColor = 0;
             // Count wires of color specified in rule
             for (int index = 0; index < 6; ++index) {
-                wiresOfColor += wireSetup[index] == solvingRulePart->color ? 1 : 0;
-                changed[index] = false;
+                if (wireSetup[index] == solvingRulePart->color) {
+                    ++wiresOfColor;
+                    changed[index] = true;
+                }
             }
 
             if (solvingRulePart->countExact == 0 && wiresOfColor != solvingRulePart->count) {
                 while (wiresOfColor > solvingRulePart->count) {
                     for (int index = 0; index < wireCount; ++index) {
-                        if (!changed[index] && wireSetup[index] == solvingRulePart->color) {
+                        if (wireSetup[index] == solvingRulePart->color) {
                             wireSetup[index] = green;
                             --wiresOfColor;
                             changed[index] = false;
@@ -101,7 +120,7 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
             } else if (solvingRulePart->countExact == -1 && wiresOfColor > solvingRulePart->count) {
                 while (wiresOfColor > solvingRulePart->count) {
                     for (int index = 0; index < wireCount; ++index) {
-                        if (!changed[index] && wireSetup[index] == solvingRulePart->color) {
+                        if (wireSetup[index] == solvingRulePart->color) {
                             wireSetup[index] = green;
                             --wiresOfColor;
                             changed[index] = false;
@@ -123,7 +142,7 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
             } else if (solvingRulePart->countExact == -2 && wiresOfColor >= solvingRulePart->count) {
                 while (wiresOfColor >= solvingRulePart->count) {
                     for (int index = 0; index < wireCount; ++index) {
-                        if (!changed[index] && wireSetup[index] == solvingRulePart->color) {
+                        if (wireSetup[index] == solvingRulePart->color) {
                             wireSetup[index] = green;
                             --wiresOfColor;
                             changed[index] = false;
@@ -136,13 +155,7 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
         solvingRulePart = solvingRulePart->additionalRule;
     }
 
-    int iteration = 0;
     while (rules.rule != solvingRule) {
-        delay(100);
-        iteration = iteration + 1;
-        if (iteration == 3) {
-            digitalWrite(LED_BUILTIN, HIGH);
-        }
         while (ruleApplies(rules.rule, wireSetup, serialOdd)) {
             if (rules.rule.position >= 0) {
                 wireSetup[rules.rule.position] = green;
@@ -189,16 +202,22 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
 // rule indexes.
 Rule determineSolvingRule(RuleSet rules, bool serialOdd)
 {
-    while (rules.nextRule) {
+    while (true) {
         if (random(100) < RULE_PROBABILITY) {
             Rule rule = rules.rule;
-            while ((rule.additionalRule != nullptr) && !serialOdd) {
+            while (!serialOdd) {
                 if (rule.color == serial) {
                     return rules.nextRule->rule;
+                }
+                if (rule.additionalRule == nullptr) {
+                    break;
                 }
                 rule = *rule.additionalRule;
             }
             return rules.rule;
+        }
+        if (rules.nextRule == nullptr) {
+            break;
         }
         rules = *rules.nextRule;
     }
@@ -207,7 +226,7 @@ Rule determineSolvingRule(RuleSet rules, bool serialOdd)
 
 int determineWireToCut(Rule solvingRule, Color wireSetup[])
 {
-    while (!solvingRule.cut >= 0 && !solvingRule.cutColor) {
+    while (solvingRule.cut < 0 && !solvingRule.cutColor) {
         solvingRule = *solvingRule.additionalRule;
     }
     if (!solvingRule.cutColor) {

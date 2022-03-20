@@ -1,3 +1,5 @@
+#include "stfu.h"
+
 #ifndef CONSTANTS
 #define CONSTANTS
 
@@ -18,7 +20,7 @@ const int WIRE_3 = 8;
 const int WIRE_4 = 9;
 const int WIRE_5 = 10;
 const int WIRE_6 = 11;
-const int WIRES[] = { WIRE_1, WIRE_2, WIRE_3, WIRE_3, WIRE_4, WIRE_5, WIRE_6 };
+const int WIRES[] = { WIRE_1, WIRE_2, WIRE_3, WIRE_4, WIRE_5, WIRE_6 };
 
 const int MIN_WIRES = 3;
 const int MAX_WIRES = 6;
@@ -29,10 +31,15 @@ const int STATE_SETUP = 2;
 const int STATE_READY = 3;
 const int STATE_RUNNING = 4;
 const int STATE_FINISHED = 5;
+const int STATE_INITIALIZE_ADDRESS = 6;
 
 // Misc constants
 const unsigned long DEBOUNCE_DELAY = 50;
 
-const float RULE_PROBABILITY = 20;
+const int RULE_PROBABILITY = 20;
+const byte SERIAL_ODD_MASK = 0b1;
+
+const byte MODULE_STATUS_SOLVED = 0b1;
+const byte MODULE_STATUS_STRIKE = 0b10;
 
 #endif

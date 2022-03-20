@@ -27,9 +27,13 @@ Rule wire6nr2 { yellow, -1, 1, 0, 3, false, &wire6nr2pt2 };
 Rule wire6nr3 { red, -1, 0, 0, 5, false, nullptr };
 Rule wire6nr4 { unspecified, -1, -1, 0, 3, false, nullptr };
 
-RuleSet RULE_BOOK[4]
-    = { RuleSet(wire3nr1, new RuleSet(wire3nr2, new RuleSet(wire3nr3, new RuleSet(wire3nr4, nullptr)))),
-          RuleSet(wire4nr1,
-              new RuleSet(wire4nr2, new RuleSet(wire4nr3, new RuleSet(wire4nr4, new RuleSet(wire4nr5, nullptr))))),
-          RuleSet(wire5nr1, new RuleSet(wire5nr2, new RuleSet(wire5nr3, new RuleSet(wire5nr4, nullptr)))),
-          RuleSet(wire6nr1, new RuleSet(wire6nr2, new RuleSet(wire6nr3, new RuleSet(wire6nr4, nullptr)))) };
+RuleSet RULE_BOOK[4] = { RuleSet(wire3nr1, &RuleSet(wire3nr2, &RuleSet(wire3nr3, &RuleSet(wire3nr4, nullptr)))),
+    RuleSet(wire4nr1, &RuleSet(wire4nr2, &RuleSet(wire4nr3, &RuleSet(wire4nr4, &RuleSet(wire4nr5, nullptr))))),
+    RuleSet(wire5nr1, &RuleSet(wire5nr2, &RuleSet(wire5nr3, &RuleSet(wire5nr4, nullptr)))),
+    RuleSet(wire6nr1, &RuleSet(wire6nr2, &RuleSet(wire6nr3, &RuleSet(wire6nr4, nullptr)))) };
+
+RuleSet RULE_BOOK_3 = RuleSet(wire3nr1, &RuleSet(wire3nr2, &RuleSet(wire3nr3, &RuleSet(wire3nr4, nullptr))));
+RuleSet RULE_BOOK_4
+    = RuleSet(wire4nr1, &RuleSet(wire4nr2, &RuleSet(wire4nr3, &RuleSet(wire4nr4, &RuleSet(wire4nr5, nullptr)))));
+RuleSet RULE_BOOK_5 = RuleSet(wire5nr1, &RuleSet(wire5nr2, &RuleSet(wire5nr3, &RuleSet(wire5nr4, nullptr))));
+RuleSet RULE_BOOK_6 = RuleSet(wire6nr1, &RuleSet(wire6nr2, &RuleSet(wire6nr3, &RuleSet(wire6nr4, nullptr))));
