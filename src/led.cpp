@@ -1,7 +1,7 @@
 #include "led.h"
 #include "constants.h"
 #include "rule.h"
-#include "stfu.h"
+#include <Arduino.h>
 
 unsigned long timestampSetRGB = 0;
 unsigned long ledMilliseconds = 0;

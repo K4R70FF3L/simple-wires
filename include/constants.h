@@ -1,4 +1,4 @@
-#include "stfu.h"
+#include <Arduino.h>
 
 #ifndef CONSTANTS
 #define CONSTANTS

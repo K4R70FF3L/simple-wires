@@ -1,7 +1,7 @@
 #include "constants.h"
 #include "led.h"
 #include "rule.h"
-#include "stfu.h"
+#include <Arduino.h>
 
 bool ruleApplies(Rule rule, Color wireSetup[], bool serialOdd)
 {
@@ -12,9 +12,9 @@ bool ruleApplies(Rule rule, Color wireSetup[], bool serialOdd)
     }
 
     // TODO for anything beyond default rules, this is going to need a major overhaul
-    if (rule.color == serial && !serialOdd) {
+    if (rule.color == serial) {
         // Handle serial rules
-        return false;
+        return serialOdd;
     } else if (rule.position >= 0) {
         // Handle rules specifying color at position
         return wireSetup[rule.position] == rule.color;
@@ -51,24 +51,6 @@ void setupWiresAccordingToRules(Color wireSetup[], int wireCount, RuleSet rules,
     bool changed[] = { false, false, false, false, false, false };
 
     Rule* solvingRulePart = &solvingRule;
-    if (solvingRulePart->countExact == 0) {
-        setRGBLedByColor(red);
-        delay(1000);
-        setRGBLedByColor(unspecified);
-        delay(500);
-    }
-    if (solvingRulePart->additionalRule->color == white) {
-        setRGBLedByColor(blue);
-        delay(1000);
-        setRGBLedByColor(unspecified);
-        delay(500);
-    }
-    if (solvingRulePart->count == 1) {
-        setRGBLedByColor(green);
-        delay(1000);
-        setRGBLedByColor(unspecified);
-        delay(500);
-    }
     while (solvingRulePart != nullptr) {
         if (solvingRulePart->color == serial || solvingRulePart->color == unspecified) {
             // Nothing to do for these rules
@@ -226,14 +208,19 @@ Rule determineSolvingRule(RuleSet rules, bool serialOdd)
 
 int determineWireToCut(Rule solvingRule, Color wireSetup[])
 {
+    // Find the part of the rule that specifies the wire to cut
     while (solvingRule.cut < 0 && !solvingRule.cutColor) {
         solvingRule = *solvingRule.additionalRule;
     }
+
+    // The wire to cut is specified by a simple index
     if (!solvingRule.cutColor) {
         return solvingRule.cut;
     }
+
+    // The wire to cut is specified by 'cut the x-th wire of color y'
     int colorIndex = 0;
-    if (solvingRule.cutColor >= 0) {
+    if (solvingRule.cut >= 0) {
         for (int index = 0; index < 6; ++index) {
             if (wireSetup[index] == solvingRule.color) {
                 if (colorIndex == solvingRule.cut) {
@@ -244,6 +231,7 @@ int determineWireToCut(Rule solvingRule, Color wireSetup[])
         }
     }
 
+    // The wire to cut is specified by 'cut the x-th to last wire of color y'
     for (int index = 5; index >= 0; --index) {
         if (wireSetup[index] == solvingRule.color) {
             if (colorIndex == (-1 - solvingRule.cut)) {
@@ -252,4 +240,8 @@ int determineWireToCut(Rule solvingRule, Color wireSetup[])
             --colorIndex;
         }
     }
+
+    // This should never be needed. If execution should reach this point, it means that the module couldn't handle a
+    // specific rule and needs to be fixed.
+    return 0;
 }

@@ -2,7 +2,7 @@
 #include "led.h"
 #include "rule.h"
 #include "state_init.h"
-#include "stfu.h"
+#include <Arduino.h>
 #include <Wire.h>
 
 int wireCount;
@@ -45,20 +45,6 @@ int initialize()
     if (gotConfigFromI2C) {
         randomSeed(seed);
         wireCount = random(MIN_WIRES, MAX_WIRES + 1);
-
-        if (RULE_BOOK_4.rule.color == red && RULE_BOOK_4.rule.count == 1 && RULE_BOOK_4.rule.countExact == 2
-            && RULE_BOOK_4.nextRule->rule.countExact == 0 && RULE_BOOK_4.nextRule->rule.count == 1
-            && RULE_BOOK_4.nextRule->rule.color == yellow && RULE_BOOK_4.nextRule->rule.additionalRule->color == white
-            && RULE_BOOK_4.nextRule->nextRule->rule.color == red && RULE_BOOK_4.nextRule->nextRule->rule.count == 0
-            && RULE_BOOK_4.nextRule->nextRule->rule.countExact == 0
-            && RULE_BOOK_4.nextRule->nextRule->nextRule->rule.color == unspecified
-            && RULE_BOOK_4.nextRule->nextRule->nextRule->rule.cut == 3) {
-            setRGBLedByColor(yellow);
-            delay(1000);
-            setRGBLedByColor(unspecified);
-            delay(500);
-        }
-
         solvingRule = determineSolvingRule(RULE_BOOK[wireCount - MIN_WIRES], serialOdd);
         setupWiresAccordingToRules(wireSetup, wireCount, RULE_BOOK[wireCount - MIN_WIRES], solvingRule, serialOdd);
         wireToCut = determineWireToCut(solvingRule, wireSetup);
@@ -125,4 +111,4 @@ int running()
     return STATE_RUNNING;
 }
 
-int finished() { }
+int finished() { return STATE_FINISHED; }

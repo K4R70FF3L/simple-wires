@@ -1,7 +1,7 @@
 #include "constants.h"
 #include "led.h"
 #include "state.h"
-#include "stfu.h"
+#include <Arduino.h>
 #include <Wire.h>
 
 // Variables

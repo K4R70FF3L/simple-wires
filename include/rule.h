@@ -61,7 +61,7 @@ struct Rule {
     //
     // Special case color=serial:
     // Specifies the position in the serial number that is needs to be considered.
-    // Serial number has 6 digits.
+    // Serial number has 8 digits.
     int position;
 
     // Specifies the amount of wires of the specified color need to be present to
@@ -168,9 +168,5 @@ extern Rule wire6nr3;
 extern Rule wire6nr4;
 
 extern RuleSet RULE_BOOK[4];
-extern RuleSet RULE_BOOK_3;
-extern RuleSet RULE_BOOK_4;
-extern RuleSet RULE_BOOK_5;
-extern RuleSet RULE_BOOK_6;
 
 #endif
